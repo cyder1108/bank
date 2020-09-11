@@ -192,6 +192,10 @@ class Collection extends EventEmitter {
       }
     });
   }
+
+  toArray() {
+    return this.__collections.map( m => m.toObject() )
+  }
 }
 
 class Model {
@@ -259,6 +263,10 @@ class Model {
       this.__attributes = beforeAttributes;
     }
     return result;
+  }
+
+  toObject() {
+    return _.cloneDeep( this.__attributes );
   }
 
   __createID() {
