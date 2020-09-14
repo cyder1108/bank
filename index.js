@@ -269,6 +269,10 @@ class Model {
     return _.cloneDeep( this.__attributes );
   }
 
+  toJSON() {
+    return JSON.stringify( this.toObject() );
+  }
+
   __createID() {
     var str = "abcdefghyjklmnopqrstuvwxyz";
     str += str.toUpperCase();

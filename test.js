@@ -41,9 +41,9 @@ test("filter", t => {
   users.create({ name: "テスト花子", age: 24, sex: "female" });
   users.create({ name: "テスト五郎", age: 50, sex: "male" });
   users.create({ name: "検証幸子",   age: 13, sex: "female" });
-  const adults = users.filter( u => 18 <= u.get("age") )
+  const adults = users.filter( u => 18 <= u.get("age") );
   t.is( adults.count(), 3);
-  adults.each( m => t.true(m.get("age") >= 18) )
+  adults.each( m => t.true(m.get("age") >= 18) );
 });
 
 
@@ -52,7 +52,7 @@ test("sort", t => {
     name: { type: "string", require: true},
     age:  { type: "number", require: true, default: 0 },
     sex:  { type: "string", require: true },
-  })
+  });
   users.create({ name: "テスト太郎", age: 25, sex: "male" });
   users.create({ name: "テスト花子", age: 24, sex: "female" });
   users.create({ name: "テスト五郎", age: 50, sex: "male" });
@@ -84,21 +84,21 @@ test("scope", t => {
     name: { type: "string", require: true},
     age:  { type: "number", require: true, default: 0 },
     sex:  { type: "string", require: true },
-  })
+  });
   users.create({ name: "テスト太郎", age: 25, sex: "male" });
   users.create({ name: "テスト花子", age: 24, sex: "female" });
   users.create({ name: "テスト五郎", age: 50, sex: "male" });
   users.create({ name: "検証幸子",   age: 13, sex: "female" });
   users.scope("ageRange", ( collections ,min, max ) => {
     return collections.filter( u => min <= u.get("age") && u.get("age") <= max );
-  })
+  });
   users.scope("female", c => c.where({sex: "female"}));
 
   const twentyAgers = users.with("ageRange", 20, 29);
-  t.is( twentyAgers.count(), 2)
+  t.is( twentyAgers.count(), 2);
 
   const femaleTwentyAgers = twentyAgers.with("female");
-  t.is( femaleTwentyAgers.count(), 1)
+  t.is( femaleTwentyAgers.count(), 1);
 });
 
 test("remove", t => {
@@ -106,7 +106,7 @@ test("remove", t => {
     name: { type: "string", require: true},
     age:  { type: "number", require: true, default: 0 },
     sex:  { type: "string", require: true },
-  })
+  });
   users.create({ name: "テスト太郎", age: 25, sex: "male" });
   users.create({ name: "テスト花子", age: 24, sex: "female" });
   users.create({ name: "テスト五郎", age: 50, sex: "male" });
@@ -123,14 +123,14 @@ test("validation", t => {
     name: { type: "string", require: true, unique: true},
     age:  { type: "number", require: true, default: 0 },
     sex:  { type: "string", require: true, validate: val => /^(male|female)$/.test(val) },
-  })
-  t.is( users.count(), 0)
+  });
+  t.is( users.count(), 0);
 
-  const model = users.new({ name: "テスト太郎", age: 25, sex: "male" })
+  const model = users.new({ name: "テスト太郎", age: 25, sex: "male" });
   t.true( users.save( model ) );
-  t.is( users.count(), 1)
+  t.is( users.count(), 1);
 
-  const dupModel = users.new({name: "テスト太郎", age: 80, sex: "male"})
+  const dupModel = users.new({name: "テスト太郎", age: 80, sex: "male"});
   t.false( users.save( dupModel ) );
   t.is( users.count(), 1);
 
@@ -149,7 +149,7 @@ test("validation", t => {
   const validModel = users.new({ name: "テスト花子", age: 24, sex: "female" });
   t.true( users.save( validModel));
   t.is( users.count(), 2);
-})
+});
 
 test("beforeFilter", t => {
   const users = new Bank.Collection({
@@ -163,5 +163,5 @@ test("beforeFilter", t => {
   const model = users.new({ name: "テスト太郎", age: 25, sex: "male" });
   t.true( users.save( model ) );
   t.is( model.get("name"), "テスト太郎 様" );
-})
+});
 
