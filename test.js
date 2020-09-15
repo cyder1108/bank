@@ -123,6 +123,7 @@ test("validation", t => {
     name: { type: "string", require: true, unique: true},
     age:  { type: "number", require: true, default: 0 },
     sex:  { type: "string", require: true, validate: val => /^(male|female)$/.test(val) },
+    power: { type: "number"}
   });
   t.is( users.count(), 0);
 

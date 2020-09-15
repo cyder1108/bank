@@ -132,8 +132,8 @@ class Collection extends EventEmitter {
   save( model ) {
     this.errors = [];
     if( this.parent !== null ) return this.parent.save(model)
-    this.checkType(model);
     this.checkPresence(model);
+    this.checkType(model);
     this.checkUniqueness(model);
     this.checkValidate(model);
     if( this.errors.length > 0) return false;
@@ -157,7 +157,7 @@ class Collection extends EventEmitter {
 
   checkType( model) {
     Object.keys( this.schema ).forEach( key => {
-      if( this.schema[key].type !== typeof( model.attr_read(key) ) ) {
+      if( model.attr_read(key) !== null && this.schema[key].type !== typeof( model.attr_read(key) ) ) {
         this.errors.push(`${key} is invalid type.`)
       }
     })
