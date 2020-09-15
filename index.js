@@ -94,7 +94,7 @@ class Collection extends EventEmitter {
   }
 
   map( callback ) {
-    _.map( this.__collections, m => { callback(m)) } )
+    return _.map( this.__collections, m => { callback(m) } )
   }
 
   count() {
