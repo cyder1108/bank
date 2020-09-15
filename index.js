@@ -93,6 +93,10 @@ class Collection extends EventEmitter {
     return this;
   }
 
+  map( callback ) {
+    _.map( this.__collections, m => { callback(m)) } )
+  }
+
   count() {
     return this.all().length
   }
