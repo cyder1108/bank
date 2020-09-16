@@ -130,13 +130,8 @@ class Collection extends EventEmitter {
   }
 
   save( model ) {
-    this.errors = [];
-    if( this.parent !== null ) return this.parent.save(model)
-    this.checkPresence(model);
-    this.checkType(model);
-    this.checkUniqueness(model);
-    this.checkValidate(model);
-    if( this.errors.length > 0) return false;
+    if( this.parent !== null ) return this.parent.save(model);
+    if( !this.valid( model )) return false;
     if( this.find( model.get("id") ) === void(0) ){
       this.__collections.push( _.cloneDeep(model) );
     } else {
@@ -144,6 +139,16 @@ class Collection extends EventEmitter {
       target.__attributes = _.cloneDeep( model.__attributes );
     }
     return true;
+  }
+
+  valid( model ) {
+    this.errors = [];
+    this.checkPresence(model);
+    this.checkType(model);
+    this.checkUniqueness(model);
+    this.checkValidate(model);
+    if( this.errors.length > 0) return false;
+    return true
   }
 
   beforeSet(key, callback) {
