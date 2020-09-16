@@ -137,7 +137,12 @@ class Collection extends EventEmitter {
     this.checkUniqueness(model);
     this.checkValidate(model);
     if( this.errors.length > 0) return false;
-    this.__collections.push( model );
+    if( this.find( model.get("id") ) === void(0) ){
+      this.__collections.push( _.cloneDeep(model) );
+    } else {
+      const target = _.find( this.__collections, m => m.get("id") === model.get("id") );
+      target.__attributes = _.cloneDeep( model.__attributes );
+    }
     return true;
   }
 

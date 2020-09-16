@@ -166,3 +166,25 @@ test("beforeFilter", t => {
   t.is( model.get("name"), "テスト太郎 様" );
 });
 
+
+test("update", t => {
+  const users = new Bank.Collection({
+    name: { type: "string", require: true, unique: true},
+    age:  { type: "number", require: true, default: 0 },
+    sex:  { type: "string", require: true, validate: val => /^(male|female)$/.test(val) },
+  });
+  const tarou = users.new({ name: "テスト太郎", age: 25, sex: "male" });
+  users.save( tarou );
+  users.create({ name: "テスト花子", age: 24, sex: "female" });
+  t.is( users.count(), 2)
+  t.is( users.find(tarou.get("id")).get("age"), 25)
+
+  tarou.set("age", 28);
+  t.is( users.count(), 2)
+  t.is( users.find(tarou.get("id")).get("age"), 25)
+
+
+  users.save( tarou )
+  t.is( users.count(), 2)
+  t.is( users.find(tarou.get("id")).get("age"), 28)
+})
