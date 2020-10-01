@@ -11,6 +11,10 @@ class Collection extends EventEmitter {
     this.__collections = collections;
     this.parent = parent
     this.Model = Model;
+    this.virtual = {
+      setter: {},
+      getter: {},
+    };
     this.filters = {
       beforeSet: {},
       beforeGet: {},
@@ -125,6 +129,7 @@ class Collection extends EventEmitter {
   new( attr = {} ) {
     const model = new this.Model( this.schema);
     model.filters = this.filters;
+    model.virtual = this.virtual;
     model.update( attr );
     return model;
   }
@@ -163,6 +168,16 @@ class Collection extends EventEmitter {
       this.filters.beforeGet[key] = [];
     }
     this.filters.beforeGet[key].push( callback );
+  }
+
+  virtualSet( key, callback ) {
+    this.virtual.setter[key] = callback;
+    return this;
+  }
+
+  virtualGet( key, callback ) {
+    this.virtual.getter[key] = callback;
+    return this;
   }
 
   checkType( model) {
@@ -235,8 +250,10 @@ class Model {
 
   init() {}
 
-
   get( key ) {
+    if( this.virtual.getter[key] !== void(0) ) {
+      return this.virtual.getter[key](this);
+    }
     var val = this.attr_read(key);
     if( this.filters.beforeGet[key] !== void(0)) {
       this.filters.beforeGet[key].forEach( filter => {
@@ -247,6 +264,9 @@ class Model {
   }
 
   set( key, val ) {
+    if( this.virtual.setter[key] !== void(0) ) {
+      return this.virtual.setter[key](this, val);
+    }
     if( this.filters.beforeSet[key] !== void(0)) {
       this.filters.beforeSet[key].forEach( filter => {
         val = filter( val, key, this );

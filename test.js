@@ -188,3 +188,32 @@ test("update", t => {
   t.is( users.count(), 2)
   t.is( users.find(tarou.get("id")).get("age"), 28)
 })
+
+test("virtual", t => {
+  const users = new Bank.Collection({
+    name: { type: "string", require: true},
+    age:  { type: "number", require: true, default: 0 },
+    sex:  { type: "string", require: true },
+  })
+
+  users.virtualGet("pname", m => {
+    return `${m.get("name")}(${m.get("age")})`
+  })
+
+  users.virtualSet("pname", ( m, val ) => {
+    const vals = val.split("(").map( v => v.replace(/\)$/,"") );
+    m.set("name", vals[0]);
+    m.set("age", +vals[1]);
+  })
+
+
+  users.create({ name: "テスト太郎", age: 25, sex: "male" });
+  const user = users.at(0);
+  t.is( user.get("name"), "テスト太郎");
+  t.is( user.get("pname"), "テスト太郎(25)" );
+
+  user.set(`pname`, "山田太郎(30)");
+  t.is( user.get("name"), "山田太郎" )
+  t.is( user.get("age"), 30 )
+
+});
