@@ -11,6 +11,7 @@ class Collection extends EventEmitter {
     this.__collections = collections;
     this.parent = parent
     this.Model = Model;
+    this.errors = [];
     this.virtual = {
       setter: {},
       getter: {},
