@@ -216,7 +216,7 @@ class Collection extends EventEmitter {
   checkValidate( model ) {
     Object.keys( this.schema ).forEach( key => {
       if( this.schema[key].validate !== void(0) && model.attr_read(key) !== null) {
-        if( !this.schema[key].validate( model.attr_read(key) ) ) {
+        if( !this.schema[key].validate( model.attr_read(key), model ) ) {
           this.errors.push(`${key} is invalid.`)
         }
       }
