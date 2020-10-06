@@ -231,9 +231,8 @@ test("addError", t => {
     }
   })
 
-  user = users.new( { age: 12, sex: "male" } );
+  user = users.new( { name: "テスト太郎", age: 12, sex: "male" } );
   t.false( users.save( user ) )
-  console.log( users.errors.map( e => e.toMessage() ) );
   user.set("age", 18);
   t.true( users.save( user ) )
   t.pass();
