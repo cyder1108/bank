@@ -167,7 +167,7 @@ test("beforeFilter", t => {
 });
 
 
-test("update", t => {
+test("set attributes", t => {
   const users = new Bank.Collection({
     name: { type: "string", require: true, unique: true},
     age:  { type: "number", require: true, default: 0 },

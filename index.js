@@ -137,7 +137,7 @@ class Collection {
     const model = new this.Model( this.schema);
     model.filters = this.filters;
     model.virtual = this.virtual;
-    model.update( attr );
+    model.setAttributes( attr );
     return model;
   }
 
@@ -196,7 +196,7 @@ class Collection {
 
   checkType( model) {
     Object.keys( this.schema ).forEach( key => {
-      if( model.attr_read(key) !== null && this.schema[key].type !== typeof( model.attr_read(key) ) ) {
+      if( model.attrRead(key) !== null && this.schema[key].type !== typeof( model.attrRead(key) ) ) {
         model.addError( key, this.errorMessage.typeMismatch )
       }
     })
@@ -206,8 +206,8 @@ class Collection {
     Object.keys( this.schema ).forEach( key => {
       if( this.schema[key].unique !== void(0) && this.schema[key].unique ) {
         const dups = this.filter( m => {
-          if( m.attr_read("id") === model.attr_read("id") ) return false;
-          return m.attr_read(key) === model.attr_read(key);
+          if( m.attrRead("id") === model.attrRead("id") ) return false;
+          return m.attrRead(key) === model.attrRead(key);
         })
         if( dups.count() > 0 ) {
           model.addError( key, this.errorMessage.duplicate )
@@ -219,7 +219,7 @@ class Collection {
   checkPresence( model ) {
     Object.keys( this.schema ).forEach( key => {
       if( this.schema[key].require !== void(0) && this.schema[key].require ) {
-        if( model.attr_read(key) === null ) {
+        if( model.attrRead(key) === null ) {
           model.addError( key, this.errorMessage.notPresent )
         }
       }
@@ -228,8 +228,8 @@ class Collection {
 
   checkValidate( model ) {
     Object.keys( this.schema ).forEach( key => {
-      if( this.schema[key].validate !== void(0) && model.attr_read(key) !== null) {
-        if( !this.schema[key].validate( model.attr_read(key), model ) ) {
+      if( this.schema[key].validate !== void(0) && model.attrRead(key) !== null) {
+        if( !this.schema[key].validate( model.attrRead(key), model ) ) {
           model.addError( key, this.errorMessage.invalid );
         }
       }
@@ -259,7 +259,7 @@ class Model {
     });
     this.__attributes.id = this.__createID()
     this.init();
-    this.update( attr );
+    this.setAttributes( attr );
   }
 
   init() {}
@@ -268,7 +268,7 @@ class Model {
     if( this.virtual.getter[key] !== void(0) ) {
       return this.virtual.getter[key](this);
     }
-    var val = this.attr_read(key);
+    var val = this.attrRead(key);
     if( this.filters.beforeGet[key] !== void(0)) {
       this.filters.beforeGet[key].forEach( filter => {
         val = filter( val, key, this );
@@ -286,19 +286,19 @@ class Model {
         val = filter( val, key, this );
       })
     }
-    return this.attr_write(key,val);
+    return this.attrWrite(key,val);
   }
 
-  attr_read( key ) {
+  attrRead( key ) {
     return _.cloneDeep( this.__attributes[key] )
   }
 
-  attr_write( key, val ) {
+  attrWrite( key, val ) {
     this.__attributes[key] = val;
     return true
   }
 
-  update( attr ) {
+  setAttributes( attr ) {
     var result = true;
     const beforeAttributes = _.cloneDeep( this.__attributes );
     Object.keys( attr ).forEach( key => {
