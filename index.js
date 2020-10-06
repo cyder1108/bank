@@ -3,9 +3,8 @@
 const _ = require(`lodash`);
 const EventEmitter = require("events").EventEmitter;
 
-class Collection extends EventEmitter {
+class Collection {
   constructor( schema, collections = [], parent = null ) {
-    super();
     this.schema = schema;
     this.schema.id = { type: "string", require: true, unique: true };
     this.__collections = collections;
@@ -19,6 +18,13 @@ class Collection extends EventEmitter {
     this.filters = {
       beforeSet: {},
       beforeGet: {},
+      beforeValidate: [],
+    }
+    this.errorMessage = {
+      duplicate: "__KEY__ is duplicated.",
+      notPresent: "__KEY__ is required.",
+      invalid: "__KEY__ is invalid.",
+      typeMismatch: "__KEY__ is mismatched type.",
     }
     if( this.parent !== null) {
       this.scopes = this.parent.scopes;
@@ -137,6 +143,8 @@ class Collection extends EventEmitter {
 
   save( model ) {
     if( this.parent !== null ) return this.parent.save(model);
+    model.errors = [];
+    this.filters.beforeValidate.forEach( _filter=> _filter(model) )
     if( !this.valid( model )) return false;
     if( this.find( model.get("id") ) === void(0) ){
       this.__collections.push( _.cloneDeep(model) );
@@ -153,6 +161,7 @@ class Collection extends EventEmitter {
     this.checkType(model);
     this.checkUniqueness(model);
     this.checkValidate(model);
+    this.errors = _.merge( this.errors, model.errors );
     if( this.errors.length > 0) return false;
     return true
   }
@@ -162,6 +171,10 @@ class Collection extends EventEmitter {
       this.filters.beforeSet[key] = [];
     }
     this.filters.beforeSet[key].push( callback );
+  }
+
+  beforeValidate( callback ) {
+    this.filters.beforeValidate.push( callback );
   }
 
   beforeGet(key, callback) {
@@ -184,7 +197,7 @@ class Collection extends EventEmitter {
   checkType( model) {
     Object.keys( this.schema ).forEach( key => {
       if( model.attr_read(key) !== null && this.schema[key].type !== typeof( model.attr_read(key) ) ) {
-        this.errors.push(`${key} is invalid type.`)
+        model.addError( key, this.errorMessage.typeMismatch )
       }
     })
   }
@@ -197,7 +210,7 @@ class Collection extends EventEmitter {
           return m.attr_read(key) === model.attr_read(key);
         })
         if( dups.count() > 0 ) {
-          this.errors.push(`${key} is duplicated.`);
+          model.addError( key, this.errorMessage.duplicate )
         }
       }
     });
@@ -207,7 +220,7 @@ class Collection extends EventEmitter {
     Object.keys( this.schema ).forEach( key => {
       if( this.schema[key].require !== void(0) && this.schema[key].require ) {
         if( model.attr_read(key) === null ) {
-          this.errors.push(`${key} is required.`)
+          model.addError( key, this.errorMessage.notPresent )
         }
       }
     })
@@ -217,7 +230,7 @@ class Collection extends EventEmitter {
     Object.keys( this.schema ).forEach( key => {
       if( this.schema[key].validate !== void(0) && model.attr_read(key) !== null) {
         if( !this.schema[key].validate( model.attr_read(key), model ) ) {
-          this.errors.push(`${key} is invalid.`)
+          model.addError( key, this.errorMessage.invalid );
         }
       }
     });
@@ -286,7 +299,6 @@ class Model {
   }
 
   update( attr ) {
-    this.errors = []
     var result = true;
     const beforeAttributes = _.cloneDeep( this.__attributes );
     Object.keys( attr ).forEach( key => {
@@ -298,6 +310,10 @@ class Model {
       this.__attributes = beforeAttributes;
     }
     return result;
+  }
+
+  addError( key, message ) {
+    this.errors.push( new ModelError(this,key,message) );
   }
 
   toObject() {
@@ -319,6 +335,18 @@ class Model {
     return `${ +new Date }${id}`;
   }
 
+}
+
+class ModelError {
+  constructor( model, key, message ) {
+    this.model = model;
+    this.key   = key;
+    this.message = message;
+  }
+
+  toMessage() {
+    return this.message.replace(/__KEY__/g, this.key)
+  }
 }
 
 module.exports = { Collection, Model }

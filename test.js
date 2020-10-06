@@ -217,3 +217,24 @@ test("virtual", t => {
   t.is( user.get("age"), 30 )
 
 });
+
+test("addError", t => {
+  const users = new Bank.Collection({
+    name: { type: "string", require: true },
+    age:  { type: "number", require: true },
+    sex:  { type: "string", require: true },
+  })
+  users.beforeValidate( m => {
+    if( m.get("age") === null ) return
+    if( m.get("age") < 18 ) {
+      m.addError("age", "未成年です。")
+    }
+  })
+
+  user = users.new( { age: 12, sex: "male" } );
+  t.false( users.save( user ) )
+  console.log( users.errors.map( e => e.toMessage() ) );
+  user.set("age", 18);
+  t.true( users.save( user ) )
+  t.pass();
+});
