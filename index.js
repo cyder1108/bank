@@ -3,8 +3,9 @@
 const _ = require(`lodash`);
 const EventEmitter = require("events").EventEmitter;
 
-class Collection {
+class Collection extends EventEmitter {
   constructor( schema, collections = [], parent = null ) {
+    super()
     this.schema = schema;
     this.schema.id = { type: "string", require: true, unique: true };
     this.__collections = collections;
@@ -117,6 +118,7 @@ class Collection {
     while( this.__collections.length > 0) {
       this.remove( this.at(0) )
     }
+    this.emit("afterRemoveAll", this);
     return this;
   }
 
@@ -124,6 +126,7 @@ class Collection {
     _.remove( this.__collections, m => m.get("id") === model.get("id"));
     if( this.parent !== null ) {
       this.parent.remove( model )
+      this.emit("afterRemove", this);
     }
     return this
   }
@@ -148,10 +151,13 @@ class Collection {
     if( !this.valid( model )) return false;
     if( this.find( model.get("id") ) === void(0) ){
       this.__collections.push( _.cloneDeep(model) );
+      this.emit("afterCreate", model, this);
     } else {
       const target = _.find( this.__collections, m => m.get("id") === model.get("id") );
       target.__attributes = _.cloneDeep( model.__attributes );
+      this.emit("afterUpdate", model, this);
     }
+    this.emit("afterSave", model, this);
     return true;
   }
 
