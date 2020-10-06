@@ -2,6 +2,21 @@ const test = require(`ava`);
 
 const Bank = require(`./`);
 
+test("save", t => {
+  const users = new Bank.Collection({
+    name: { type: "string", require: true},
+    age:  { type: "number", require: true, default: 0 },
+    sex:  { type: "string", require: true },
+  })
+  const user = users.new({name: "テスト太郎", age: 24, sex: "male"});
+  t.true( users.save( user ) );
+  userId = user.get("id");
+  user.set("age", 18);
+  t.is( users.find(userId).get("age"), 24);
+  users.save( user )
+  t.is( users.find(userId).get("age"), 18);
+})
+
 test("find", t => {
   const users = new Bank.Collection({
     name: { type: "string", require: true},
